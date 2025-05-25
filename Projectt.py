@@ -4,243 +4,175 @@ import csv
 import os
 
 class CUDScraper:
-    def __init__(self, username, password, semester, csv_filename="course_offerings.csv"):
-        # Initialize login credentials, semester value, and target portal URL
+    def __init__(self, username, password, semester, csv_filename="course_offerings.csv", max_concurrency: int = 4):
         self.username = username
         self.password = password
         self.semester = semester
-        self.url = "https://cudportal.cud.ac.ae/student/login.asp"
+        self.login_url = "https://cudportal.cud.ac.ae/student/login.asp"
+        self.csv_filename = csv_filename
+        self._sem = asyncio.Semaphore(max_concurrency)
         self.playwright = None
         self.browser = None
-        self.page = None
-        self.csv_filename = csv_filename
+        self.filtered_url = None
+        self.storage_state = None
 
     async def start_browser(self, headless=True):
-        # Starts a Playwright Chromium browser instance asynchronously
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(headless=headless)
-        self.page = await self.browser.new_page()
-        print("Browser started.")
 
-    async def login(self):
-        try:
-            print("Loading login page...")
-            await self.page.goto(self.url, timeout=15000)  # 15s timeout
+    async def initial_login_and_filter(self):
+        # Single page context to login and apply filter, then capture state
+        context = await self.browser.new_context()
+        page = await context.new_page()
+        # login
+        await page.goto(self.login_url, timeout=15000)
+        await page.fill("#txtUsername", self.username)
+        await page.fill("#txtPassword", self.password)
+        await page.wait_for_selector("#idterm", timeout=10000)
+        await page.select_option("#idterm", self.semester)
+        await page.click("#btnLogin")
+        await page.wait_for_selector("a:has-text('Course Offering')", timeout=20000)
+        # navigate to offerings & apply filter
+        await page.click("text=Course Offering")
+        await page.wait_for_selector("#displayFilter")
+        await page.click("#displayFilter")
+        await page.select_option("#idDivisions", "SEAST")
+        await page.click("#btnSubmit")
+        # wait for loaded table
+        await page.wait_for_selector(".Portal_Group_Table", timeout=20000)
+        # capture filtered URL and storage state
+        self.filtered_url = page.url
+        self.storage_state = await context.storage_state()
+        # cleanup
+        await page.close()
+        await context.close()
 
-            # Fill in username and password
-            await self.page.fill("#txtUsername", self.username)
-            await self.page.fill("#txtPassword", self.password)
+    async def scrape_page(self, page_number: int) -> dict:
+        # throttle concurrency
+        async with self._sem:
+            # new context reusing logged-in state
+            context = await self.browser.new_context(storage_state=self.storage_state)
+            page = await context.new_page()
+            try:
+                # jump straight into the already-filtered listing
+                await page.goto(self.filtered_url, wait_until="networkidle")
+                # click to page number
+                await page.click(f'a:has-text("{page_number}")')
+                await page.wait_for_selector(".Portal_Group_Table", timeout=15000)
 
-            # Wait for the term dropdown to appear and then select the term.
-            # Update the selector if necessary. 
-            await self.page.wait_for_selector("#idterm", timeout=10000)
-            await self.page.select_option("#idterm", self.semester)
-
-            # Click the login button
-            await self.page.click("#btnLogin")
-            await self.page.wait_for_timeout(5000)  # brief pause
-
-            # Wait for the Course Offering link to confirm successful login
-            await self.page.wait_for_selector("a:has-text('Course Offering')", timeout=20000)
-            print("Login successful.")
-        except Exception as e:
-            raise RuntimeError(f" Login failed: {e}")
-
-
-
-    async def navigate_to_courses(self):
-        """Navigates to the Course Offerings page."""
-        await self.page.click("text=Course Offering")
-        await self.page.wait_for_selector("#displayFilter")
-        print(" Navigated to Course Offerings.")
-
-    async def apply_filters(self, division="SEAST"):
-        # Applies division filter (e.g., SEAST) to show relevant courses
-        await self.page.click("#displayFilter")
-        await self.page.select_option("#idDivisions", division)
-        await self.page.click("#btnSubmit")
-        await self.page.wait_for_selector(".Portal_Group_Table")
-        print(f" Filter applied for division: {division}")
-
-    async def scrape_courses(self, filename="course_offerings.csv"):
-        """
-        Scrapes all course offering pages, parses sessions for each course,
-        and saves the structured data into a CSV.
-        """
-        print(" Starting course scraping...")
-
-        # Dictionary to group sessions by course_code.
-        courses_dict = {}
-        skipped_courses = 0
-        total_pages = 8  # Fixed based on your project spec
-
-        # Group sessions by course_code and handle pages iteratively
-        for page_number in range(1, total_pages + 1):
-            # Look for session tables and parse each session into the dict
-            print(f"\n Scraping Page {page_number}...")
-            rows = await self.page.query_selector_all(".Portal_Group_Table tbody tr")
-            i = 0
-            while i < len(rows):
-                # Treat current row as the course row.
-                main_row = rows[i]
-                course_cells = await main_row.query_selector_all("td")
-                if len(course_cells) < 3:
-                    i += 1
-                    continue
-
-                course_code = (await course_cells[0].inner_text()) or ""
-                course_code = course_code.strip()
-                course_name = (await course_cells[1].inner_text()) or ""
-                course_name = course_name.strip()
-                credits = (await course_cells[2].inner_text()) or ""
-                credits = credits.strip()
-
-                # Check if next row exists and contains a nested session table.
-                session_row = None
-                if i + 1 < len(rows):
-                    possible_session = rows[i + 1]
-                    nested_table = await possible_session.query_selector("table")
-                    if nested_table is not None:
-                        session_row = possible_session
+                local = {}
+                rows = await page.query_selector_all(".Portal_Group_Table tbody tr")
+                skipped = 0
+                i = 0
+                while i < len(rows):
+                    cells = await rows[i].query_selector_all("td")
+                    if len(cells) < 3:
+                        i += 1
+                        continue
+                    code = (await cells[0].inner_text()).strip()
+                    name = (await cells[1].inner_text()).strip()
+                    creds = (await cells[2].inner_text()).strip()
+                    # detect session table
+                    session_row = None
+                    if i+1 < len(rows) and await rows[i+1].query_selector("table"):
+                        session_row = rows[i+1]
                         i += 2
                     else:
                         i += 1
-                else:
-                    i += 1
-
-                # If there's no session row, skip this course.
-                if not session_row:
-                    print(f" Skipped {course_code} (no session table)")
-                    skipped_courses += 1
-                    continue
-
-                all_session_rows = await session_row.query_selector_all("tr")
-                session_rows = all_session_rows[1:]  # Skip header row
-
-                # Create or update the dictionary entry for the course.
-                if course_code not in courses_dict:
-                    courses_dict[course_code] = {
-                        "course_name": course_name,
-                        "credits": credits,
-                        "sessions": []
-                    }
-
-                for session in session_rows:
-                    cells = await session.query_selector_all("td")
-                    if len(cells) < 9:
+                    if not session_row:
+                        skipped += 1
                         continue
+                    all_rows = await session_row.query_selector_all("tr")
+                    session_rows = all_rows[1:]
+                    local.setdefault(code, {"course_name": name, "credits": creds, "sessions": []})
+                    for sr in session_rows:
+                        cols = await sr.query_selector_all("td")
+                        if len(cols) < 9:
+                            continue
+                        sess = { key: (await cols[idx].inner_text()).strip()
+                                 for idx, key in zip([1,2,3,5,6,7,8],
+                                                     ["instructor","room","days","start_time","end_time","max_enroll","total_enroll"]) }
+                        local[code]["sessions"].append(sess)
+                print(f"Page {page_number}: parsed {len(local)} courses, skipped {skipped}")
+                return local
+            finally:
+                await page.close()
+                await context.close()
 
-                    instructor   = (await cells[1].inner_text()) or ""
-                    room         = (await cells[2].inner_text()) or ""
-                    days         = (await cells[3].inner_text()) or ""
-                    start_time   = (await cells[5].inner_text()) or ""
-                    end_time     = (await cells[6].inner_text()) or ""
-                    max_enroll   = (await cells[7].inner_text()) or ""
-                    total_enroll = (await cells[8].inner_text()) or ""
+    async def scrape_courses(self):
+        # login + filter once
+        await self.initial_login_and_filter()
+        # launch tasks
+        total_pages = 8
+        tasks = [asyncio.create_task(self.scrape_page(n)) for n in range(1, total_pages+1)]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # handle errors
+        for idx, result in enumerate(results, start=1):
+            if isinstance(result, Exception):
+                print(f"⚠️ page {idx} failed: {result}")
+                results[idx-1] = {}
+        # merge + dedupe
+        courses = {}
+        for local in results:
+            for code, info in local.items():
+                entry = courses.setdefault(code, {"course_name": info["course_name"],
+                                                 "credits": info["credits"],
+                                                 "sessions": [],
+                                                 "_seen": set()})
+                for s in info["sessions"]:
+                    key = (s["days"], s["start_time"], s["end_time"], s["instructor"])
+                    if key in entry["_seen"]: continue
+                    entry["_seen"].add(key)
+                    entry["sessions"].append(s)
+        # drop seen
+        for e in courses.values(): del e["_seen"]
+        # write CSV
+        with open(self.csv_filename, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["No.","Course","Course Name","Credits",
+                        "Instructor","Room","Days","Start Time","End Time","Max Enrollment","Total Enrollment"])
+            c = 1
+            for code, info in courses.items():
+                first = True
+                for s in info["sessions"]:
+                    row = [c if first else "", code if first else "", info["course_name"] if first else "",
+                           info["credits"] if first else "", s["instructor"], s["room"], s["days"],
+                           s["start_time"], s["end_time"], s["max_enroll"], s["total_enroll"]]
+                    w.writerow(row)
+                    first = False
+                c += 1
+        print(f"\nDone! Saved to {self.csv_filename}")
 
-                    # Strip values to avoid extra whitespace.
-                    instructor = instructor.strip()
-                    room = room.strip()
-                    days = days.strip()
-                    start_time = start_time.strip()
-                    end_time = end_time.strip()
-                    max_enroll = max_enroll.strip()
-                    total_enroll = total_enroll.strip()
-
-                    courses_dict[course_code]["sessions"].append({
-                        "instructor": instructor,
-                        "room": room,
-                        "days": days,
-                        "start_time": start_time,
-                        "end_time": end_time,
-                        "max_enroll": max_enroll,
-                        "total_enroll": total_enroll
-                    })
-
-            # Go to next page 
-            if page_number < total_pages:
-                try:
-                    await self.page.click(f'text="{page_number + 1}"')
-                    await self.page.wait_for_timeout(2000)
-                except Exception as e:
-                    print(f" Failed to click page {page_number + 1}: {e}")
-                    break
-
-        # Save parsed and grouped session data into the CSV
-        with open(filename, "w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow([
-                "No.", "Course", "Course Name", "Credits",
-                "Instructor", "Room", "Days",
-                "Start Time", "End Time", "Max Enrollment", "Total Enrollment"
-            ])
-
-            course_counter = 1  # Increment once per course
-            for code, info in courses_dict.items():
-                sessions = info["sessions"]
-                first_session = True
-                for s in sessions:
-                    if first_session:
-                        writer.writerow([
-                            course_counter,
-                            code or "",
-                            info["course_name"] or "",
-                            info["credits"] or "",
-                            s["instructor"] or "",
-                            s["room"] or "",
-                            s["days"] or "",
-                            s["start_time"] or "",
-                            s["end_time"] or "",
-                            s["max_enroll"] or "",
-                            s["total_enroll"] or ""
-                        ])
-                        first_session = False
-                    else:
-                        writer.writerow([
-                            "", "", "", "",
-                            s["instructor"] or "",
-                            s["room"] or "",
-                            s["days"] or "",
-                            s["start_time"] or "",
-                            s["end_time"] or "",
-                            s["max_enroll"] or "",
-                            s["total_enroll"] or ""
-                        ])
-                course_counter += 1
-
-        print(f"\n Done! Saved grouped course data to '{filename}'")
-        print(f" Skipped {skipped_courses} course blocks with no session table")
-
-    async def close_browser(self):
-        """Closes the browser session."""
-        if self.browser:
-            await self.browser.close()
-        if self.playwright:
-            await self.playwright.stop()
-        print(" Browser closed.")
+    async def close(self):
+        await self.browser.close()
+        await self.playwright.stop()
 
     async def run(self, headless=True):
-        # Full scraping pipeline: login, apply filters, scrape, and close browser
-        try:
-            await self.start_browser(headless)
-            await self.login()
-            await self.navigate_to_courses()
-            await self.apply_filters()
-            await self.scrape_courses(self.csv_filename)
-        finally:
-            await self.close_browser()
+        await self.start_browser(headless)
+        await self.scrape_courses()
+        await self.close()
 
     def verify_credentials(self):
-        async def _check():
-            try:
-                await self.start_browser(headless=True)
-                await self.login()
-                return True
-            except Exception:
-                return False
-            finally:
-                await self.close_browser()
-        return asyncio.run(_check())
+        return asyncio.run(self._verify())
+
+    async def _verify(self):
+        await self.start_browser(headless=True)
+        try:
+            # only login, no scrape
+            context = await self.browser.new_context()
+            page = await context.new_page()
+            await page.goto(self.login_url, timeout=15000)
+            await page.fill("#txtUsername", self.username)
+            await page.fill("#txtPassword", self.password)
+            await page.wait_for_selector("#idterm", timeout=10000)
+            await page.select_option("#idterm", self.semester)
+            await page.click("#btnLogin")
+            await page.wait_for_selector("a:has-text('Course Offering')", timeout=20000)
+            return True
+        except:
+            return False
+        finally:
+            await self.close()
 
 
 def check_timing_changes(csv_filename="course_offerings.csv", backup_filename="course_offerings_backup.csv"):
