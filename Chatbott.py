@@ -16,7 +16,7 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
     nest_asyncio.apply()
 
-# Display title in reddddd
+# Display title in red
 def show_app_title():
     st.markdown("<h1 style='color:red;'>ASKADEMIC</h1>", unsafe_allow_html=True)
 
