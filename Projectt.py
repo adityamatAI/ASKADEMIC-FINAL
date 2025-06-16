@@ -243,84 +243,79 @@ class CUDScraper:
         return asyncio.run(_check())
 
 
-def check_timing_changes(csv_filename="course_offerings.csv", backup_filename="course_offerings_backup.csv"):
+def check_timing_changes(csv_filename="course_offerings.csv"):
     """
-    Checks for timing changes by grouping course lecture rows together.
-    For each course lecture group (the group starts with a row having a Course value),
-    it compares each session's 'Start Time' and 'End Time' with the corresponding session
-    in the backup. If any session's timing has changed or a new session is added,
-    it outputs a message with the course lecture and the new timings.
+    Checks for timing changes by comparing the live CSV against a single
+    semester-level backup file (backup_<csv_filename>) in the current directory.
     """
-    changes = []
-    current_rows = []
-    # Load current CSV data.
-    if os.path.exists(csv_filename):
-        with open(csv_filename, "r", newline="", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                current_rows.append(row)
-    else:
+    # Read current data
+    if not os.path.exists(csv_filename):
         return ["Current course data not found."]
-    
-    # Group current data by course lecture.
-    current_groups = {}
-    group_key = None
-    for row in current_rows:
-        if row["Course"].strip():
-            group_key = row["Course"].strip()
-            current_groups[group_key] = [row]
-        else:
-            if group_key:
-                current_groups[group_key].append(row)
-    
-    # Load backup CSV data and group similarly.
-    backup_groups = {}
-    if os.path.exists(backup_filename):
-        backup_rows = []
-        with open(backup_filename, "r", newline="", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                backup_rows.append(row)
-        group_key = None
-        for row in backup_rows:
-            if row["Course"].strip():
-                group_key = row["Course"].strip()
-                backup_groups[group_key] = [row]
-            else:
-                if group_key:
-                    backup_groups[group_key].append(row)
-    
-    # Compare each course group.
-    for course, sessions in current_groups.items():
-        if course in backup_groups:
-            backup_sessions = backup_groups[course]
-            # Compare session by session (using index).
-            for idx, cur in enumerate(sessions):
-                # If a session row has timing info (non-empty 'Start Time' or 'End Time')
-                cur_start = cur["Start Time"].strip() if cur["Start Time"] else ""
-                cur_end = cur["End Time"].strip() if cur["End Time"] else ""
-                if idx < len(backup_sessions):
-                    back = backup_sessions[idx]
-                    back_start = back["Start Time"].strip() if back["Start Time"] else ""
-                    back_end = back["End Time"].strip() if back["End Time"] else ""
-                    if cur_start != back_start or cur_end != back_end:
-                        change_msg = (f"Course {course} session {idx + 1} timing changed: "
-                                      f"new Start Time: {cur_start}, new End Time: {cur_end}.")
-                        changes.append(change_msg)
-                else:
-                    # New session added
-                    change_msg = (f"Course {course} session {idx + 1} is new with timings: "
-                                  f"Start Time: {cur_start}, End Time: {cur_end}.")
-                    changes.append(change_msg)
-    
-    # Update the backup CSV with current data (overwrite).
-    if current_rows:
-        with open(backup_filename, "w", newline="", encoding="utf-8") as file:
-            writer = csv.DictWriter(file, fieldnames=current_rows[0].keys())
+
+    with open(csv_filename, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        current_rows = list(reader)
+
+    # Determine backup filename
+    sem_backup_name = f"backup_{os.path.basename(csv_filename)}"
+
+    # On first run, create backup and exit
+    if not os.path.exists(sem_backup_name):
+        with open(sem_backup_name, 'w', newline='', encoding='utf-8') as sb:
+            writer = csv.DictWriter(sb, fieldnames=current_rows[0].keys())
             writer.writeheader()
             writer.writerows(current_rows)
-    
+        return []  # No previous data to compare
+
+    # Load backup data
+    with open(sem_backup_name, newline='', encoding='utf-8') as bf:
+        backup_rows = list(csv.DictReader(bf))
+
+    # Helper: group rows by course code
+    def group_by_course(rows):
+        groups = {}
+        last_code = None
+        for row in rows:
+            code = row['Course'].strip() or last_code
+            if not code:
+                continue
+            groups.setdefault(code, []).append(row)
+            last_code = code
+        return groups
+
+    current_groups = group_by_course(current_rows)
+    backup_groups  = group_by_course(backup_rows)
+
+    changes = []
+
+    # Compare each course
+    for code, cur_sessions in current_groups.items():
+        back_sessions = backup_groups.get(code, [])
+        for idx, cur in enumerate(cur_sessions):
+            cur_start = cur.get('Start Time','').strip()
+            cur_end   = cur.get('End Time','').strip()
+            if idx < len(back_sessions):
+                back = back_sessions[idx]
+                back_start = back.get('Start Time','').strip()
+                back_end   = back.get('End Time','').strip()
+                if cur_start != back_start or cur_end != back_end:
+                    changes.append(
+                        f"Course {code} session {idx+1} changed: "
+                        f"new {cur_start}-{cur_end}, was {back_start}-{back_end}"
+                    )
+            else:
+                changes.append(
+                    f"Course {code} session {idx+1} is new: {cur_start}-{cur_end}"
+                )
+
+    # Overwrite semester backup for next comparison
+    with open(sem_backup_name, 'w', newline='', encoding='utf-8') as sb:
+        writer = csv.DictWriter(sb, fieldnames=current_rows[0].keys())
+        writer.writeheader()
+        writer.writerows(current_rows)
+
     return changes
+
 
 if __name__ == "__main__":
     async def main():
