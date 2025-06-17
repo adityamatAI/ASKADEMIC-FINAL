@@ -1,6 +1,17 @@
-streamlit
-pandas
-playwright
-nest_asyncio
-pydantic
-matplotlib
+# Streamlit for creating the web application interface
+streamlit==1.35.0
+
+# Pandas for data manipulation and reading CSV files
+pandas==2.2.2
+
+# Pydantic for data validation and modeling
+pydantic==2.7.4
+
+# Matplotlib for generating schedule plots
+matplotlib==3.9.0
+
+# Playwright for web scraping and browser automation
+playwright==1.44.0
+
+# Nest-asyncio to allow asyncio to run within Streamlit's event loop
+nest-asyncio==1.6.0
