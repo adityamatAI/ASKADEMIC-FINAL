@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import nest_asyncio
 from pydantic import BaseModel, ValidationError
-from Projectt import CUDScraper, check_timing_changes
+from scraper import CUDScraper, check_timing_changes
 import itertools
 import re
 import matplotlib.pyplot as plt
