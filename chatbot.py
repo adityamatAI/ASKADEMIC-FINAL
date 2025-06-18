@@ -14,14 +14,18 @@ import subprocess
 
 
 @st.cache_resource
-def install_browser():
+def install_playwright_browser():
     """
     Installs the Playwright Chromium browser if not already installed.
-    The @st.cache_resource decorator ensures this function is only run once.
+    The @st.cache_resource decorator ensures this is only run once.
     """
-    # We run the command with subprocess
-    # "--with-deps" is not needed here because we installed them in packages.txt
+    # We run the command with subprocess.
+    # We only need chromium for this app.
     subprocess.run(["playwright", "install", "chromium"], check=True)
+
+# Call the function to ensure the browser is installed before any scraper code runs.
+install_playwright_browser()
+
 # Async setup for Windows
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
