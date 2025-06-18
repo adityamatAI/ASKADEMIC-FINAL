@@ -10,7 +10,18 @@ import itertools
 import re
 import matplotlib.pyplot as plt
 import datetime
+import subprocess
 
+
+@st.cache_resource
+def install_browser():
+    """
+    Installs the Playwright Chromium browser if not already installed.
+    The @st.cache_resource decorator ensures this function is only run once.
+    """
+    # We run the command with subprocess
+    # "--with-deps" is not needed here because we installed them in packages.txt
+    subprocess.run(["playwright", "install", "chromium"], check=True)
 # Async setup for Windows
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())

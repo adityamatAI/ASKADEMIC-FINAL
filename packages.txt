@@ -1,1 +1,13 @@
-playwright install --with-deps
+libnss3
+libnspr4
+libdbus-glib-1-2
+libatk-bridge2.0-0
+libcups2
+libdrm2
+libxkbcommon0
+libxcomposite1
+libxdamage1
+libxfixes3
+libxrandr2
+libgbm1
+libasound2
