@@ -2,7 +2,7 @@
 streamlit==1.35.0
 
 # Pandas for data manipulation and reading CSV files
-pandas==2.2.2
+pandas
 
 # Pydantic for data validation and modeling
 pydantic==2.7.4
