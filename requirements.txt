@@ -1,17 +1,20 @@
+# Tell Streamlit to use Python 3.11
+python-version == "3.11"
+
 # Streamlit for creating the web application interface
-streamlit==1.35.0
+streamlit
 
 # Pandas for data manipulation and reading CSV files
 pandas
 
 # Pydantic for data validation and modeling
-pydantic==2.7.4
+pydantic
 
 # Matplotlib for generating schedule plots
-matplotlib==3.9.0
+matplotlib
 
 # Playwright for web scraping and browser automation
-playwright==1.44.0
+playwright
 
 # Nest-asyncio to allow asyncio to run within Streamlit's event loop
-nest-asyncio==1.6.0
+nest-asyncio
