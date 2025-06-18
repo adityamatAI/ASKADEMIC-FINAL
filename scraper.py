@@ -22,10 +22,12 @@ class CUDScraper:
 
     async def login(self):
         try:
-            await self.page.goto(self.url, timeout=15000)
+            # --- MODIFIED: Increased timeout for initial page load ---
+            await self.page.goto(self.url, timeout=60000)
             await self.page.fill("#txtUsername", self.username)
             await self.page.fill("#txtPassword", self.password)
-            await self.page.wait_for_selector("#idterm", timeout=10000)
+            # --- MODIFIED: Increased timeout for finding the selector ---
+            await self.page.wait_for_selector("#idterm", timeout=30000)
             await self.page.select_option("#idterm", self.semester)
 
             loop = asyncio.get_running_loop()
@@ -40,7 +42,8 @@ class CUDScraper:
 
             try:
                 await self.page.click("#btnLogin")
-                success_task = asyncio.create_task(self.page.wait_for_url("**/student/index.asp**", timeout=15000))
+                # --- MODIFIED: Increased timeout for waiting for the successful login URL ---
+                success_task = asyncio.create_task(self.page.wait_for_url("**/student/index.asp**", timeout=30000))
                 failure_task = dialog_future
                 done, pending = await asyncio.wait([success_task, failure_task], return_when=asyncio.FIRST_COMPLETED)
 
