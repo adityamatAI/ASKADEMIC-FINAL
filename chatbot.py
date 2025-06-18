@@ -206,13 +206,13 @@ def main():
     if st.session_state.page == 'login':
         user = st.text_input('Username', key='u')
         pwd  = st.text_input('Password', type='password', key='p')
-        term = st.selectbox('Term', list({'FA 2025-26':'75','SP 2024-25':'72','SU 2024-25':'73','FA 2024-25':'71'}.keys()), key='t')
+        term = st.selectbox('Term', list({'FA 2025-26':'75'}.keys()), key='t')
 
         if st.button('Login'):
             if not (user and pwd):
                 st.error('Enter username and password.')
             else:
-                sem_map = {'FA 2024-25':'71','SP 2024-25':'72','SU 2024-25':'73','FA 2025-26':'75'}
+                sem_map = {'FA 2025-26':'75'}
                 sem_code = sem_map.get(term)
                 if not sem_code:
                     st.error(f'Unknown term: {term}')
