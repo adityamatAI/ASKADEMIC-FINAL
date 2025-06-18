@@ -22,11 +22,9 @@ class CUDScraper:
 
     async def login(self):
         try:
-            # --- MODIFIED: Increased timeout for initial page load ---
             await self.page.goto(self.url, timeout=60000)
             await self.page.fill("#txtUsername", self.username)
             await self.page.fill("#txtPassword", self.password)
-            # --- MODIFIED: Increased timeout for finding the selector ---
             await self.page.wait_for_selector("#idterm", timeout=30000)
             await self.page.select_option("#idterm", self.semester)
 
@@ -42,7 +40,6 @@ class CUDScraper:
 
             try:
                 await self.page.click("#btnLogin")
-                # --- MODIFIED: Increased timeout for waiting for the successful login URL ---
                 success_task = asyncio.create_task(self.page.wait_for_url("**/student/index.asp**", timeout=30000))
                 failure_task = dialog_future
                 done, pending = await asyncio.wait([success_task, failure_task], return_when=asyncio.FIRST_COMPLETED)
@@ -107,8 +104,9 @@ class CUDScraper:
                 m = re.search(r'Total Pages:\s*(\d+)', txt)
                 if m:
                     total_pages = int(m.group(1))
-        except:
+        except Exception:
             total_pages = 1
+        
         page_num = 1
         while page_num <= total_pages:
             rows = await self.page.query_selector_all(".Portal_Group_Table tbody tr")
@@ -152,13 +150,21 @@ class CUDScraper:
                     })
             if page_num < total_pages:
                 try:
-                    next_num = page_num + 1
-                    link = self.page.get_by_role("link", name=str(next_num)).first
-                    await link.click()
-                    await self.page.wait_for_selector(".Portal_Group_Table")
-                except:
+                    await self.page.get_by_role("link", name=str(page_num + 1), exact=True).first.click()
+                except Exception:
+                    try:
+                        await self.page.get_by_role("link", name="Next", exact=True).first.click()
+                    except Exception:
+                        print(f"Could not find next page link or 'Next' button on page {page_num}. Stopping.")
+                        break
+                try:
+                    await self.page.wait_for_selector(".Portal_Group_Table", timeout=10000)
+                except Exception:
+                    print(f"Table did not load on page {page_num + 1}. Stopping.")
                     break
+            
             page_num += 1
+
         with open(filename, "w", newline='', encoding='utf-8') as f:
             w = csv.writer(f)
             w.writerow(["No.", "Course", "Course Name", "Credits", "Instructor", "Room", "Days", "Start Time", "End Time", "Max Enrollment", "Total Enrollment"])
@@ -235,8 +241,5 @@ def check_timing_changes(csv_filename="course_offerings.csv"):
         writer.writeheader()
         writer.writerows(current_rows)
     return changes
-
-# This block is for testing the script directly from the command line.
-# It is NOT used when the Streamlit app imports this file.
 if __name__ == "__main__":
     pass
