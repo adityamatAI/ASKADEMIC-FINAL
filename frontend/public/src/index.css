@@ -1,0 +1,202 @@
+/* frontend/src/index.css */
+:root {
+  --primary-bg: #f4f7f6;
+  --secondary-bg: #ffffff;
+  --header-color: #d90429;
+  --text-color: #2d3142;
+  --border-color: #e0e0e0;
+  --accent-color: #4f5d75;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+}
+
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header h1.main-title {
+  color: var(--header-color);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Login Form */
+.login-form-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #3b465a;
+}
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: var(--header-color);
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Dashboard */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+}
+
+.sidebar {
+  background-color: var(--secondary-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  align-self: start;
+}
+
+.sidebar h3 {
+  margin-top: 0;
+}
+
+.pref-item {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-button {
+    margin-top: 2rem;
+    background-color: #bf0603;
+}
+.logout-button:hover {
+    background-color: #a60502;
+}
+
+
+.main-content {
+  background-color: var(--secondary-bg);
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.message-box {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+  background-color: #eef2f5;
+  border: 1px solid #d1d9e0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.course-selector, .controls {
+    margin: 1.5rem 0;
+}
+
+.schedule-display {
+    margin-top: 2rem;
+}
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.schedule-nav button {
+    width: auto;
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+}
+
+/* Schedule Plot */
+.schedule-plot-container {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    overflow-x: auto;
+}
+
+.time-label, .day-header {
+    font-size: 0.8rem;
+    text-align: center;
+    color: #666;
+}
+
+.time-label {
+    position: relative;
+    top: -8px; /* Align with grid lines */
+}
+
+.course-block {
+    border-radius: 4px;
+    color: white;
+    padding: 4px;
+    font-size: 0.8rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.course-block strong {
+    font-weight: bold;
+}
+.spinner {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
