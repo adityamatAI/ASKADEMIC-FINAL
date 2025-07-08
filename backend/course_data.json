@@ -1,0 +1,229 @@
+{
+  "75": {
+    "ACC340Lec1": {
+      "course_name": "Financial Management",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-103",
+          "start_time": "Weekly",
+          "end_time": "12:00:00 PM",
+          "max_enroll": "2:59:00 PM",
+          "total_enroll": "35"
+        }
+      ]
+    },
+    "ACT112Lec1": {
+      "course_name": "Principles Of Accounting 1",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-201",
+          "start_time": "Weekly",
+          "end_time": "3:00:00 PM",
+          "max_enroll": "5:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT112Lec2": {
+      "course_name": "Principles Of Accounting 1",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-201",
+          "start_time": "Weekly",
+          "end_time": "12:00:00 PM",
+          "max_enroll": "2:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT112Lec3": {
+      "course_name": "Principles Of Accounting 1",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-202",
+          "start_time": "Weekly",
+          "end_time": "9:00:00 AM",
+          "max_enroll": "11:59:00 AM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT112Lec4": {
+      "course_name": "Principles Of Accounting 1",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "Ouzan, Samuel",
+          "days": "HUB-114",
+          "start_time": "Weekly",
+          "end_time": "6:00:00 PM",
+          "max_enroll": "8:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT112Lec5": {
+      "course_name": "Principles Of Accounting 1",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "HUB-101",
+          "start_time": "Weekly",
+          "end_time": "9:00:00 AM",
+          "max_enroll": "11:59:00 AM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT212Lec1": {
+      "course_name": "Principles Of Accounting 2",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "Atayah, Osama",
+          "days": "MGT-201",
+          "start_time": "Weekly",
+          "end_time": "12:00:00 PM",
+          "max_enroll": "2:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT212Lec2": {
+      "course_name": "Principles Of Accounting 2",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "Atayah, Osama",
+          "days": "MGT-202",
+          "start_time": "Weekly",
+          "end_time": "3:00:00 PM",
+          "max_enroll": "5:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT212Lec3": {
+      "course_name": "Principles Of Accounting 2",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-201",
+          "start_time": "Weekly",
+          "end_time": "6:00:00 PM",
+          "max_enroll": "8:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT250Lec1": {
+      "course_name": "Fundamentals Of Taxation",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-107",
+          "start_time": "Weekly",
+          "end_time": "12:00:00 PM",
+          "max_enroll": "2:59:00 PM",
+          "total_enroll": "30"
+        }
+      ]
+    },
+    "ACT330Lec1": {
+      "course_name": "International Financial Reporting Standards",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-101",
+          "start_time": "Weekly",
+          "end_time": "9:00:00 AM",
+          "max_enroll": "11:59:00 AM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT330Lec2": {
+      "course_name": "International Financial Reporting Standards",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-204",
+          "start_time": "Weekly",
+          "end_time": "6:00:00 PM",
+          "max_enroll": "8:59:00 PM",
+          "total_enroll": "40"
+        }
+      ]
+    },
+    "ACT450Lec1": {
+      "course_name": "Auditing",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-206",
+          "start_time": "Weekly",
+          "end_time": "3:00:00 PM",
+          "max_enroll": "5:59:00 PM",
+          "total_enroll": "32"
+        }
+      ]
+    },
+    "AIMC210Lec1": {
+      "course_name": "Audience Perceptions And Insights",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-102",
+          "start_time": "Weekly",
+          "end_time": "9:00:00 AM",
+          "max_enroll": "11:59:00 AM",
+          "total_enroll": "32"
+        }
+      ]
+    },
+    "AIMC315Lec1": {
+      "course_name": "Creative Advertising Strategies",
+      "credits": "3",
+      "sessions": [
+        {
+          "instructor": "",
+          "room": "IP, IP",
+          "days": "MGT-207",
+          "start_time": "Weekly",
+          "end_time": "3:00:00 PM",
+          "max_enroll": "5:59:00 PM",
+          "total_enroll": "35"
+        }
+      ]
+    }
+  }
+}
