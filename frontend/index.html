@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASKADEMIC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ASKADEMIC</h1>
+
+        <div id="login-section">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <select id="term">
+                <option value="75">FA 2025-26</option>
+            </select>
+            <!-- Changed Button -->
+            <button id="login-btn">Login & Use Saved Data</button>
+            <!-- New Button -->
+            <button id="force-scrape-btn" class="secondary-btn">Force Re-Scrape</button>
+            <div id="login-status" class="status"></div>
+        </div>
+
+        <div id="dashboard-section" style="display: none;">
+            <div class="sidebar">
+                <h3>Schedule Preferences</h3>
+                <label><input type="checkbox" id="no-before"> No classes before:</label>
+                <input type="time" id="before-time" value="11:00" disabled>
+                
+                <label><input type="checkbox" id="no-after"> No classes after:</label>
+                <input type="time" id="after-time" value="17:00" disabled>
+                
+                <label><input type="checkbox" id="avoid-friday"> No Friday classes</label>
+                <label><input type="checkbox" id="avoid-b2b"> No back-to-back classes</label>
+                <label><input type="checkbox" id="minimize-days"> Minimize days on campus</label>
+
+                <p class="info">Select courses and generate your ideal schedule.</p>
+                 <button id="logout-btn">Logout</button>
+            </div>
+            <div class="main-content">
+                <h3>Select Courses</h3>
+                <select id="course-select" multiple></select>
+                <button id="generate-btn">Generate Schedules</button>
+                <div id="schedule-status" class="status"></div>
+
+                <div id="schedule-display" style="display: none;">
+                    <div class="navigation">
+                        <button id="prev-schedule">◀ Prev</button>
+                        <span id="schedule-info"></span>
+                        <button id="next-schedule">Next ▶</button>
+                    </div>
+                    <div id="schedule-details"></div>
+                    <canvas id="schedule-plot"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: red;
+    text-align: center;
+}
+
+#login-section, .sidebar, .main-content {
+    padding: 20px;
+    border-radius: 5px;
+}
+
+#login-section {
+    max-width: 400px;
+    margin: 40px auto;
+    border: 1px solid #ddd;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #c9302c;
+}
+
+#dashboard-section {
+    display: flex;
+    gap: 20px;
+}
+
+.sidebar {
+    flex-basis: 250px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+}
+
+.sidebar label {
+    display: block;
+    margin-bottom: 10px;
+}
+.sidebar input[type="time"] {
+    margin-left: 10px;
+    width: auto;
+}
+
+
+.main-content {
+    flex-grow: 1;
+}
+
+#course-select {
+    height: 200px;
+}
+
+.status {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+#schedule-display {
+    margin-top: 20px;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#schedule-details {
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+}
